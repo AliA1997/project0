@@ -51,22 +51,25 @@ NodeList.prototype.removeItem = function(index) {
 NodeList.prototype.removeMultipleItems = function() {
   //Have a counter indicating the number of items to delete to remove from the current count.
   var itemsDeleted = 0;
-  //Loop through the nodelist 
-  this.forEach((item, i) => {
-    //If the nodelist have children or the innerHtml of the item is not null, then check if the checkbox is checked.
-    if(item.children.length) {
-      const checkbox = item.children[0].children[0];
-      if(checkbox.checked === true) {
-        //THen add one to the item's deleted.
-        itemsDeleted += 1;
-        //THen remove that item using it's index.
-        this.removeItem(i);
-        //Then check the number of items.
-        this.checkedItems();
-      }
+  var list = this;
+  setTimeout(function() {
+    //Loop through the nodelist 
+    list.forEach((item, i) => {
+      //If the nodelist have children or the innerHtml of the item is not null, then check if the checkbox is checked.
+      if(item.children.length) {
+        const checkbox = item.children[0].children[0];
+        if(checkbox.checked === true) {
+          //THen add one to the item's deleted.
+          itemsDeleted += 1;
+          //THen remove that item using it's index.
+          list.removeItem(i);
+          //Then check the number of items.
+          list.checkedItems();
+        }
 
-    }
-  });
+      }
+    });
+  })
   //Use the counter to delete from count of the current # of items.
   decrementMultiple(itemsDeleted);
 }
@@ -195,6 +198,9 @@ function createNewElement(typeArg, stylesArg) {
     //Reassign the returnedTag to the styleGenerator function using your returnedTag, and stylesObject.
     returnedTag = styleGenerator(returnedTag, stylesObj);
   
+    if(type == 'li')
+      returnedTag.id = `li-${itemCountSpan.textContent}`;
+
     //Then return the styled element.
     return returnedTag;
   
@@ -234,8 +240,18 @@ function createNewElement(typeArg, stylesArg) {
 
       //Add a event handler removing that specific item when click on that button.
       closedButton.onclick = function() {
-
-        list.childNodes.removeItem(index);
+        if(list.childNodes.length > 1) {
+          setTimeout(function() {            
+            list.childNodes.removeItem(index);      
+            list.childNodes.checkedItems();      
+          });
+          //If there is just one item set the list's innerHtml to null.   
+        } else {
+          list.innerHTML = null;
+          setTimeout(function() {
+            list.childNodes.checkedItems();      
+          });
+        }
 
       }
 
